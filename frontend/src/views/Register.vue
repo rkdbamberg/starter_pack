@@ -70,7 +70,7 @@ export default {
 
         localStorage.setItem('user', JSON.stringify(response.data.user));
 
-        this.$router.push('/dashboard');
+        this.$router.push('/admin/overview');
 
       } catch (error) {
         console.error('Erro no registro:', error);

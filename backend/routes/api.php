@@ -4,8 +4,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\UserController;
 
-// Rotas Públicas (Qualquer um acessa)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -18,5 +19,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
-    // Aqui virão suas rotas do sistema (Overview, Users, etc)
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    Route::prefix('admin')->group(function () {
+
+        Route::apiResource('users', UserController::class);
+
+    });
 });

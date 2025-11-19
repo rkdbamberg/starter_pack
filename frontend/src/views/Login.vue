@@ -39,7 +39,7 @@ export default {
         });
 
         // Se o login for bem-sucedido, redireciona para o dashboard
-        this.$router.push('/dashboard'); // Assumindo que você tem uma rota '/dashboard'
+        this.$router.push('/admin/overview'); // Assumindo que você tem uma rota '/dashboard'
       } catch (err) {
         this.error = 'Falha no login. Verifique suas credenciais.';
         console.error('Erro de login:', err);

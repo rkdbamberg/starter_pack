@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+    // Bloqueia tudo, EXCETO login e register
+        $this->middleware('auth:api', ['except' => ['login', 'register']]);
+    }
+
     // REGISTRO
     public function register(Request $request)
     {
