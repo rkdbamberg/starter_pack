@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\StoreUserRequest;
+use App\Services\AddressService;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -25,7 +27,7 @@ class UserController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -60,24 +62,44 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id, AddressService $addressService)
     {
         $user = User::findOrFail($id);
+        $data = $request->validated(); // Pega os dados validados
 
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id, // Ignora o email do próprio user
-            'password' => 'sometimes|min:6',
-            'role_id' => 'nullable|exists:roles,id'
-        ]);
+        // --- LÓGICA DE ENDEREÇO ---
+        // Se o usuário mandou um CEP, vamos resolver o ID do endereço
+        if (!empty($request->cep)) {
+            
+            $endereco = $addressService->buscarOuCriarPorCep($request->cep);
 
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
+            if ($endereco) {
+                // Vincula o ID do endereço encontrado/criado ao usuário
+                $data['endereco_id'] = $endereco->id;
+            } else {
+                // Se retornou null, o CEP é inválido
+                return response()->json(['message' => 'CEP não encontrado ou inválido.'], 422);
+            }
+        }
+        // --------------------------
+
+        // Se tiver senha, faz o hash
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
         }
 
-        $user->update($validated);
+        // Limpa o documento (CPF/CNPJ) antes de salvar, se quiser salvar só números
+        if (isset($data['documento'])) {
+            $data['documento'] = preg_replace('/[^0-9]/', '', $data['documento']);
+        }
 
-        return response()->json($user);
+        // Atualiza o usuário
+        $user->update($data);
+
+        // Retorna o usuário com os dados do endereço carregados
+        return response()->json(
+            $user->load(['role', 'endereco.cidade.estado'])
+        );
     }
 
     /**

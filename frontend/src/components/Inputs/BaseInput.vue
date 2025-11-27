@@ -18,10 +18,24 @@
     </slot>
     <slot>
       <input
+        v-if="mask"
+        v-mask="mask"
         :value="value"
         v-bind="$attrs"
         v-on="listeners"
         class="form-control"
+        @input="$emit('input', $event.target.value)"
+        @blur="$emit('blur', $event)" 
+        aria-describedby="addon-right addon-left">
+
+        <input
+        v-else
+        :value="value"
+        v-bind="$attrs"
+        v-on="listeners"
+        class="form-control"
+        @input="$emit('input', $event.target.value)"
+        @blur="$emit('blur', $event)" 
         aria-describedby="addon-right addon-left">
     </slot>
     <slot name="addonRight">
@@ -55,6 +69,11 @@
         type: String,
         description: "Input icon on the left"
       },
+      mask: {
+        type: [String, Array],
+        description: "Input mask (requires vue-the-mask plugin)",
+        default: null
+      }
     },
     model: {
       prop: 'value',

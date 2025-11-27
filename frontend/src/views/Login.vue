@@ -32,18 +32,19 @@ export default {
     async handleLogin() {
       this.error = null; // Limpa erros anteriores
       try {
-        // Requisição para a API de login do Laravel
-        await axios.post('/api/login', {
+        const response = await axios.post('/api/login', {
           email: this.email,
           password: this.password
         });
 
-        // Se o login for bem-sucedido, redireciona para o dashboard
-        this.$router.push('/admin/overview'); // Assumindo que você tem uma rota '/dashboard'
+        // Salva o token no localStorage
+        localStorage.setItem('access_token', response.data.access_token);
+
+        // Redireciona para o dashboard
+        this.$router.push('/admin/overview');
       } catch (err) {
         this.error = 'Falha no login. Verifique suas credenciais.';
         console.error('Erro de login:', err);
-        // Capturar e exibir mensagens de erro específicas do Laravel, se houver
         if (err.response && err.response.data && err.response.data.errors) {
           this.error = Object.values(err.response.data.errors).flat().join(' ');
         }

@@ -4,11 +4,15 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CepController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\UserController;
 
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/cep/{cep}', [CepController::class, 'buscar']);
 
 // Rotas Protegidas (Precisa estar logado - Token Bearer)
 Route::middleware('auth:sanctum')->group(function () {
@@ -22,8 +26,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     Route::prefix('admin')->group(function () {
-
         Route::apiResource('users', UserController::class);
-
     });
+
 });
