@@ -25,7 +25,7 @@ class UpdateUserRequest extends FormRequest
     public function rules()
     {
             // Pega o ID do usuário da rota (ex: /users/1)
-        $userId = $this->route('user') ? $this->route('user')->id : $this->id;
+        $userId = $this->route('user');
 
         return [
             // --- Dados Básicos ---
@@ -48,8 +48,8 @@ class UpdateUserRequest extends FormRequest
             'telefone' => 'required|string', // Pode adicionar regex se quiser forçar formato
 
             // --- Endereço (Campos planos/flat) ---
-            'cep'         => 'required|string',
-            'numero'      => 'required|string',
+            'cep'         => 'nullable|string',
+            'numero'      => 'nullable|string',
             'complemento' => 'nullable|string',
 
             // --- Endereço (Objeto Aninhado) ---

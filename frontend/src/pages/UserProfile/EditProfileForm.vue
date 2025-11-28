@@ -1,8 +1,8 @@
 <template>
   <!-- Usamos v-if no user para garantir que a prop chegou -->
   <card v-if="user">
-    <h4 slot="header" class="card-title">Edit Profile</h4>
-    <form>
+    <h4 slot="header" class="card-title">Editar usuário</h4>
+    <form @submit.prevent="updateProfile">
       <div class="row">
         <div class="col-md-5">
           <!-- IMPORTANTE: v-model apontando para FORM, não user -->
@@ -53,7 +53,7 @@
           <!-- CORREÇÃO PRINCIPAL: @blur.native e v-model="form.cep" -->
           <base-input 
             type="text" 
-            label="CEP" 
+            label="CEP"
             placeholder="00.000-000"
             mask="##.###-###"
             v-model="form.cep"
@@ -163,6 +163,7 @@
   },
   data () {
     return {
+      loading: false,
       isLoadingCep: false,
       cepError: '',
       form: {
@@ -197,31 +198,30 @@
   watch: {
     user: {
       handler(newUser) {
-        if (newUser) {
-          // Copia os dados da Prop para o Form Local
-          this.form.role_id = newUser.role_id || '';
-          this.form.documento = newUser.documento || '';
-          this.form.email = newUser.email || '';
-          this.form.name = newUser.name || '';
-          this.form.apelido = newUser.apelido || '';
-          this.form.telefone = newUser.telefone || '';
-          this.form.cep = newUser.cep || ''; // Importante: Se já tiver CEP, preenche
-          this.form.numero = newUser.numero || '';
-          this.form.complemento = newUser.complemento || '';
+        if (!newUser) return;
+
+        this.form.role_id = newUser.role_id || '';
+        this.form.documento = newUser.documento || '';
+        this.form.email = newUser.email || '';
+        this.form.name = newUser.name || '';
+        this.form.apelido = newUser.apelido || '';
+        this.form.telefone = newUser.telefone || '';
+        this.form.cep = newUser.cep || ''; // Importante: Se já tiver CEP, preenche
+        this.form.numero = newUser.numero || '';
+        this.form.complemento = newUser.complemento || '';
           
-          // Se o usuário vindo do banco já tiver endereço
-          if (newUser.endereco) {
-             // Precisamos garantir que a estrutura existe para não quebrar o HTML
-             this.form.endereco = {
-                logradouro: newUser.endereco.logradouro || '',
-                bairro: newUser.endereco.bairro || '',
-                cidade: {
-                    nome: newUser.endereco.cidade ? newUser.endereco.cidade.nome : '',
-                    estado: {
-                        uf: newUser.endereco.cidade && newUser.endereco.cidade.estado ? newUser.endereco.cidade.estado.uf : ''
-                    }
-                }
-             }
+        // Se o usuário vindo do banco já tiver endereço
+        if (newUser.endereco) {
+          // Precisamos garantir que a estrutura existe para não quebrar o HTML
+          this.form.endereco = {
+            logradouro: newUser.endereco.logradouro || '',
+            bairro: newUser.endereco.bairro || '',
+            cidade: {
+              nome: newUser.endereco.cidade ? newUser.endereco.cidade.nome : '',
+              estado: {
+                uf: newUser.endereco.cidade && newUser.endereco.cidade.estado ? newUser.endereco.cidade.estado.uf : ''
+              }
+            }
           }
         }
       },
@@ -229,6 +229,17 @@
     }
   },
   methods: {
+
+    validateForm() {
+      if (!this.form.role_id) return "Selecione o perfil";
+      if (!this.form.documento) return "Informe o CPF/CNPJ";
+      if (!this.form.email) return "Informe o email";
+      if (!this.form.name) return "Informe o nome";
+      if (!this.form.telefone) return "Informe o telefone";
+      if (!this.form.cep) return "Informe o CEP";
+      return null;
+    },
+      
     buscarCep () {
 
       // Remove caracteres não numéricos
